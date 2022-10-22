@@ -1,0 +1,1 @@
+{"version":3,"file":"Table.types.d.ts","sourceRoot":"","sources":["../../../src/components/table/Table.types.ts"],"names":[],"mappings":"AAAA,OAAO,EACL,oBAAoB,EACpB,uBAAuB,EACxB,MAAM,0BAA0B,CAAC;AAElC,MAAM,WAAW,WAAW;IAC1B,OAAO,EAAE,oBAAoB,GAAG,uBAAuB,CAAC;CACzD"}
