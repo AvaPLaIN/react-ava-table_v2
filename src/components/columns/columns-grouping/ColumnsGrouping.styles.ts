@@ -1,5 +1,3 @@
 import styled from "styled-components";
 
-export const ColumnHeaderContainer = styled.div`
-  background-color: blue;
-`;
+export const ColumnHeaderContainer = styled.div``;

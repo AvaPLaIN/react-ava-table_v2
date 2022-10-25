@@ -11,7 +11,7 @@ const Table = ({ columns, columnGrouping }: TTableProps) => {
   const { onResize } = useOnResizeColumns({ tableRef, columnGrouping });
 
   return (
-    <TableContainer ref={tableRef}>
+    <TableContainer ref={tableRef}>TableContainer
       {columnGrouping ? (
         <ColumnsGrouping columns={columns} onResize={onResize} />
       ) : (

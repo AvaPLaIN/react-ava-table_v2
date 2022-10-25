@@ -5,9 +5,17 @@ const Header = ({ columns, onResize }: IColumnsGrouping) => {
   return (
     <HeaderContainer>
       {columns.map((column, index) => (
-        <div key={index} data-name="column-header" data-header-id={index}>
+        <div
+          key={index}
+          data-name="column-header"
+          data-header-id={index}
+          className="column-container"
+        >
           <p>{column.headerName}</p>
-          <div onMouseDown={() => onResize({ columnHeaderIndex: index })}>
+          <div
+            onMouseDown={() => onResize({ columnHeaderIndex: index })}
+            className="drag"
+          >
             |
           </div>
         </div>

@@ -21,9 +21,17 @@ const Children = ({ columns, onResize }: IChildrenProps) => {
             key={`${column.index}-${idx}`}
             data-name="column"
             data-header-id={column.index}
+            className="column-container"
           >
             <p>{col.label}</p>
-            <div onMouseDown={() => onResize({ columnIndex: idx })}>|</div>
+            <div
+              className="drag"
+              onMouseDown={() =>
+                onResize({ columnIndex: idx, columnHeaderIndex: column.index })
+              }
+            >
+              |
+            </div>
           </div>
         ))
       )}

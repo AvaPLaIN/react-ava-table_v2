@@ -7,8 +7,8 @@ interface IUseOnResizeColumnsProps {
 }
 
 export interface IOnResizeProps {
-  columnHeaderIndex?: number;
-  columnIndex?: number;
+  columnHeaderIndex?: number | null;
+  columnIndex?: number | null;
 }
 
 type ColumnRefType = Array<HTMLDivElement[]>;
@@ -61,6 +61,8 @@ const useOnResizeColumns = ({
       let gridColumnLayout = "";
       let gridColumnHeadersLayout = "";
 
+      console.log("moving here");
+
       columnHeaderRefs?.forEach((column, index) => {
         if (index === columnHeaderResizeIndex) {
           const beforeWidth = column.offsetWidth;
@@ -95,18 +97,59 @@ const useOnResizeColumns = ({
     [columnHeaderRefs, columnHeaderResizeIndex, columnRefs]
   );
 
-  const handleOnMouseMoveColumn = useCallback(() => {}, []);
-  const handleOnMouseUp = useCallback(() => {}, []);
+  const handleOnMouseMoveColumn = useCallback(
+    (event: any) => {
+      let gridColumnLayout = "";
+      let gridColumnHeadersLayout = "";
+
+      columnHeaderRefs?.forEach((column, index) => {
+        if (index === columnHeaderResizeIndex) {
+          let dif = 0;
+          columnRefs[index].forEach((col, idx) => {
+            if (idx === columnResizeIndex) {
+              const beforeWidth = col.offsetWidth;
+              const width = event.clientX - col.offsetLeft;
+              dif = width - beforeWidth;
+              gridColumnLayout += `${width}px `;
+            } else {
+              const width = col.offsetWidth;
+              gridColumnLayout += `${width}px `;
+            }
+          });
+
+          const newColumnHeaderWidth = column.offsetWidth + dif;
+          gridColumnHeadersLayout += `${newColumnHeaderWidth}px `;
+        } else {
+          const columnHeaderWidth = column.offsetWidth;
+          gridColumnHeadersLayout += `${columnHeaderWidth}px `;
+
+          columnRefs[index].forEach((col, idx) => {
+            const width = col.offsetWidth;
+            gridColumnLayout += `${width}px `;
+          });
+        }
+      });
+
+      console.log("gridColumnHeadersLayout: ", gridColumnHeadersLayout);
+      console.log("gridColumnLayout: ", gridColumnLayout);
+    },
+    [columnHeaderRefs, columnHeaderResizeIndex, columnRefs, columnResizeIndex]
+  );
 
   const removeListeners = useCallback(() => {
     window.removeEventListener("mousemove", handleOnMouseMoveColumnHeader);
     window.removeEventListener("mousemove", handleOnMouseMoveColumn);
     window.removeEventListener("mouseup", handleOnMouseUp);
+  }, [handleOnMouseMoveColumn, handleOnMouseMoveColumnHeader]);
+
+  const handleOnMouseUp = useCallback(() => {
     setColumnHeaderResizeIndex(null);
     setColumnResizeIndex(null);
-  }, [handleOnMouseMoveColumn, handleOnMouseMoveColumnHeader, handleOnMouseUp]);
+    removeListeners();
+  }, [removeListeners]);
 
   useEffect(() => {
+    console.log("useEffect", columnHeaderResizeIndex, columnResizeIndex);
     if (columnHeaderResizeIndex !== null && columnResizeIndex === null) {
       window.addEventListener("mousemove", handleOnMouseMoveColumnHeader);
       window.addEventListener("mouseup", handleOnMouseUp);
@@ -129,9 +172,12 @@ const useOnResizeColumns = ({
     removeListeners,
   ]);
 
-  const onResize = ({ columnHeaderIndex, columnIndex }: IOnResizeProps) => {
-    setColumnHeaderResizeIndex(columnHeaderIndex || null);
-    setColumnResizeIndex(columnIndex || null);
+  const onResize = ({
+    columnHeaderIndex = null,
+    columnIndex = null,
+  }: IOnResizeProps) => {
+    setColumnHeaderResizeIndex(columnHeaderIndex);
+    setColumnResizeIndex(columnIndex);
   };
 
   return { onResize };
