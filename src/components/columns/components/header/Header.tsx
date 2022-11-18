@@ -3,7 +3,7 @@ import { HeaderContainer } from "./Header.styles";
 
 const Header = ({ columns, onResize }: IColumnsGrouping) => {
   return (
-    <HeaderContainer>
+    <HeaderContainer data-name="column-group-container">
       {columns.map((column, index) => (
         <div
           key={index}

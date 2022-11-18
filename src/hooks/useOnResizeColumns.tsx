@@ -26,6 +26,13 @@ const useOnResizeColumns = ({
     useState<NodeListOf<HTMLDivElement>>();
   const indexOfColumn = useRef(1);
 
+  const columnGroupContainer = tableRef.current?.querySelector(
+    "div[data-name=column-group-container]"
+  ) as HTMLElement;
+  const columnChildrenContainer = tableRef.current?.querySelector(
+    "div[data-name=column-children-container]"
+  ) as HTMLElement;
+
   useEffect(() => {
     const columnHeaderRefs = columnGrouping
       ? tableRef.current?.children[0].querySelectorAll<HTMLDivElement>(
@@ -56,12 +63,10 @@ const useOnResizeColumns = ({
     setColumnRefs(sortedColumnRefs);
   }, [tableRef, columnGrouping]);
 
-  const handleOnMouseMoveColumnHeader = useCallback(
+  const handleOnMouseMoveColumnHeaderWithColumnGrouping = useCallback(
     (event: any) => {
       let gridColumnLayout = "";
       let gridColumnHeadersLayout = "";
-
-      console.log("moving here");
 
       columnHeaderRefs?.forEach((column, index) => {
         if (index === columnHeaderResizeIndex) {
@@ -91,13 +96,19 @@ const useOnResizeColumns = ({
         }
       });
 
-      console.log("gridColumnHeadersLayout: ", gridColumnHeadersLayout);
-      console.log("gridColumnLayout: ", gridColumnLayout);
+      columnGroupContainer.style.gridTemplateColumns = gridColumnHeadersLayout;
+      columnChildrenContainer.style.gridTemplateColumns = gridColumnLayout;
     },
-    [columnHeaderRefs, columnHeaderResizeIndex, columnRefs]
+    [
+      columnChildrenContainer,
+      columnGroupContainer,
+      columnHeaderRefs,
+      columnHeaderResizeIndex,
+      columnRefs,
+    ]
   );
 
-  const handleOnMouseMoveColumn = useCallback(
+  const handleOnMouseMoveColumnWithColumnGrouping = useCallback(
     (event: any) => {
       let gridColumnLayout = "";
       let gridColumnHeadersLayout = "";
@@ -130,17 +141,64 @@ const useOnResizeColumns = ({
         }
       });
 
-      console.log("gridColumnHeadersLayout: ", gridColumnHeadersLayout);
-      console.log("gridColumnLayout: ", gridColumnLayout);
+      columnGroupContainer.style.gridTemplateColumns = gridColumnHeadersLayout;
+      columnChildrenContainer.style.gridTemplateColumns = gridColumnLayout;
     },
-    [columnHeaderRefs, columnHeaderResizeIndex, columnRefs, columnResizeIndex]
+    [
+      columnChildrenContainer,
+      columnGroupContainer,
+      columnHeaderRefs,
+      columnHeaderResizeIndex,
+      columnRefs,
+      columnResizeIndex,
+    ]
+  );
+
+  const handleOnMouseMoveColumnWithoutColumnGrouping = useCallback(
+    (event: any) => {
+      let gridColumnLayout = "";
+
+      console.log("test: ", columnHeaderResizeIndex);
+
+      columnRefs.forEach((column, index) => {
+        if (index === columnHeaderResizeIndex) {
+          column.forEach((col) => {
+            const width = event.clientX - col.offsetLeft;
+            gridColumnLayout += `${width}px `;
+          });
+        } else {
+          column.forEach((col) => {
+            const width = col.offsetWidth;
+            gridColumnLayout += `${width}px `;
+          });
+        }
+      });
+
+      columnChildrenContainer.style.gridTemplateColumns = gridColumnLayout;
+    },
+    [columnChildrenContainer, columnHeaderResizeIndex, columnRefs]
   );
 
   const removeListeners = useCallback(() => {
-    window.removeEventListener("mousemove", handleOnMouseMoveColumnHeader);
-    window.removeEventListener("mousemove", handleOnMouseMoveColumn);
+    window.removeEventListener(
+      "mousemove",
+      handleOnMouseMoveColumnHeaderWithColumnGrouping
+    );
+    window.removeEventListener(
+      "mousemove",
+      handleOnMouseMoveColumnWithColumnGrouping
+    );
+    window.removeEventListener(
+      "mousemove",
+      handleOnMouseMoveColumnWithoutColumnGrouping
+    );
     window.removeEventListener("mouseup", handleOnMouseUp);
-  }, [handleOnMouseMoveColumn, handleOnMouseMoveColumnHeader]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    handleOnMouseMoveColumnWithColumnGrouping,
+    handleOnMouseMoveColumnHeaderWithColumnGrouping,
+    handleOnMouseMoveColumnWithoutColumnGrouping,
+  ]);
 
   const handleOnMouseUp = useCallback(() => {
     setColumnHeaderResizeIndex(null);
@@ -149,14 +207,38 @@ const useOnResizeColumns = ({
   }, [removeListeners]);
 
   useEffect(() => {
-    console.log("useEffect", columnHeaderResizeIndex, columnResizeIndex);
-    if (columnHeaderResizeIndex !== null && columnResizeIndex === null) {
-      window.addEventListener("mousemove", handleOnMouseMoveColumnHeader);
+    // resize columns with no grouping
+    if (!columnGrouping && columnResizeIndex !== null) {
+      window.addEventListener(
+        "mousemove",
+        handleOnMouseMoveColumnWithoutColumnGrouping
+      );
       window.addEventListener("mouseup", handleOnMouseUp);
     }
 
-    if (columnHeaderResizeIndex !== null && columnResizeIndex !== null) {
-      window.addEventListener("mousemove", handleOnMouseMoveColumn);
+    // resize column headers with grouping
+    if (
+      columnGrouping &&
+      columnHeaderResizeIndex !== null &&
+      columnResizeIndex === null
+    ) {
+      window.addEventListener(
+        "mousemove",
+        handleOnMouseMoveColumnHeaderWithColumnGrouping
+      );
+      window.addEventListener("mouseup", handleOnMouseUp);
+    }
+
+    // resize normal columns with grouping
+    if (
+      columnGrouping &&
+      columnHeaderResizeIndex !== null &&
+      columnResizeIndex !== null
+    ) {
+      window.addEventListener(
+        "mousemove",
+        handleOnMouseMoveColumnWithColumnGrouping
+      );
       window.addEventListener("mouseup", handleOnMouseUp);
     }
 
@@ -164,12 +246,14 @@ const useOnResizeColumns = ({
       removeListeners();
     };
   }, [
+    columnGrouping,
     columnHeaderResizeIndex,
     columnResizeIndex,
-    handleOnMouseMoveColumn,
-    handleOnMouseMoveColumnHeader,
+    handleOnMouseMoveColumnWithColumnGrouping,
+    handleOnMouseMoveColumnHeaderWithColumnGrouping,
     handleOnMouseUp,
     removeListeners,
+    handleOnMouseMoveColumnWithoutColumnGrouping,
   ]);
 
   const onResize = ({

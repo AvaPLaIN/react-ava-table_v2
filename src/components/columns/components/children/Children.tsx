@@ -14,7 +14,7 @@ interface IChildrenProps {
 
 const Children = ({ columns, onResize }: IChildrenProps) => {
   return (
-    <ChildrenContainer>
+    <ChildrenContainer data-name="column-children-container">
       {columns.map((column) =>
         column.column.map((col, idx) => (
           <div
@@ -26,9 +26,9 @@ const Children = ({ columns, onResize }: IChildrenProps) => {
             <p>{col.label}</p>
             <div
               className="drag"
-              onMouseDown={() =>
-                onResize({ columnIndex: idx, columnHeaderIndex: column.index })
-              }
+              onMouseDown={() => {
+                onResize({ columnIndex: idx, columnHeaderIndex: column.index });
+              }}
             >
               |
             </div>
